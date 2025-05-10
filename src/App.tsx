@@ -16,6 +16,9 @@ import HistoricalPage from "@/pages/HistoricalPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/NotFound";
 import AboutPage from "@/pages/AboutPage";
+import ForgotPassword from "@/pages/ForgotPassword";
+import OTPVerification from "@/pages/OTPVerification";
+import ResetPassword from "@/pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<AuthPage defaultTab="login" />} />
             <Route path="/register" element={<AuthPage defaultTab="register" />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/otp-verification" element={<OTPVerification />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Dashboard routes */}
             <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

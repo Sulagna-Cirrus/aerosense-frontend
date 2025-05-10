@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Using a relative URL allows the proxy in vite.config.ts to handle routing
+const API_URL = '';
 
 // Create axios instance with default config
 const api = axios.create({

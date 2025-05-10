@@ -11,6 +11,8 @@ interface Profile {
   bio?: string;
   phone?: string;
   address?: string;
+  organization?: string;
+  role?: string;
 }
 
 interface User {
@@ -30,6 +32,7 @@ type AuthContextType = {
   user: User | null;
   userProfile: User | null;
   isLoading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (fullName: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -189,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         userProfile,
         isLoading,
+        setUser,
         signIn,
         signUp,
         signOut,

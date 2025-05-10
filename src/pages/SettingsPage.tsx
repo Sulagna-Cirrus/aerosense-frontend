@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
   CardContent,
@@ -15,19 +16,24 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Lock, Bell, Languages, Gauge, Globe, Save } from "lucide-react";
+import { User, Lock, Bell, Languages, Gauge, Globe, Save, Upload, Camera } from "lucide-react";
+import api from "@/config/api";
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { user, setUser } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Profile settings state
   const [profileForm, setProfileForm] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+91 98765 43210",
-    organization: "AgriTech Solutions",
-    role: "Farm Manager",
+    name: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.profile?.phone || "",
+    organization: user?.profile?.organization || "",
+    role: user?.profile?.role || "",
   });
   
   // Notification settings state
@@ -52,11 +58,108 @@ export default function SettingsPage() {
     dataRetention: "90",
   });
   
-  const handleSaveProfile = () => {
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been updated successfully.",
-    });
+  const handleProfilePictureChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Profile picture must be less than 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      // Create form data for file upload
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      
+      // Upload the profile picture
+      const response = await api.post('/api/profiles/upload-picture', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      if (response.data?.profileImage) {
+        // Update user context with new profile image
+        setUser({
+          ...user,
+          profile: {
+            ...user?.profile,
+            profileImage: response.data.profileImage,
+          },
+        });
+        
+        toast({
+          title: "Profile picture updated",
+          description: "Your profile picture has been updated successfully.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.response?.data?.message || "Failed to upload profile picture",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      // Save profile information
+      await api.put('/api/profiles/update', {
+        fullName: profileForm.name,
+        phone: profileForm.phone,
+        organization: profileForm.organization,
+        role: profileForm.role,
+      });
+      
+      // Update user context
+      setUser({
+        ...user,
+        fullName: profileForm.name,
+        profile: {
+          ...user?.profile,
+          phone: profileForm.phone,
+          // Cast as any to handle missing type definitions
+          organization: profileForm.organization as any,
+          role: profileForm.role as any,
+        },
+      });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.response?.data?.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleSaveNotifications = () => {
@@ -104,10 +207,46 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
               <CardDescription>
-                Update your personal details and contact information
+                Update your profile picture and personal details
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Profile Picture Upload */}
+              <div className="flex flex-col items-center sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 pb-6 border-b">
+                <div className="relative">
+                  <UserAvatar user={user || {}} size="lg" className="h-24 w-24" />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full hover:bg-primary/90 transition-colors"
+                    aria-label="Upload profile picture"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                  />
+                </div>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-lg font-medium">{user?.fullName || "Your Name"}</h3>
+                  <p className="text-sm text-muted-foreground mb-3">{user?.email || "your.email@example.com"}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Upload className="h-4 w-4" />
+                    {isUploading ? "Uploading..." : "Upload Picture"}
+                  </Button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -153,7 +292,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveProfile} className="flex items-center gap-2">
+              <Button onClick={handleSaveProfile} className="flex items-center gap-2" disabled={isUploading}>
                 <Save className="h-4 w-4" />
                 Save Changes
               </Button>
@@ -168,6 +307,7 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="current-password">Current Password</Label>

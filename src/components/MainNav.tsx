@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type MainNavProps = {
@@ -99,18 +99,8 @@ export function MainNav({ onScrollToSection }: MainNavProps) {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                    <Avatar className="h-9 w-9">
-                      {user.profile && user.profile.profileImage ? (
-                        <AvatarImage 
-                          src={`http://localhost:5000/uploads/profiles/${user.profile.profileImage}`} 
-                          alt={user.fullName} 
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-primary text-white">
-                        {user.fullName?.charAt(0) || <User size={16} />}
-                      </AvatarFallback>
-                    </Avatar>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                    <UserAvatar user={user} size="sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
