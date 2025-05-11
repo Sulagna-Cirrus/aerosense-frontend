@@ -90,7 +90,7 @@ export default function SettingsPage() {
       formData.append('profileImage', file);
       
       // Upload the profile picture
-      const response = await api.post('/api/profiles/upload-picture', formData, {
+      const response = await api.post('/profiles/upload-picture', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -129,7 +129,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     try {
       // Save profile information
-      await api.put('/api/profiles/update', {
+      await api.put('/profiles/update', {
         fullName: profileForm.name,
         phone: profileForm.phone,
         organization: profileForm.organization,

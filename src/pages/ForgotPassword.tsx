@@ -26,7 +26,8 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      await api.post("/api/password-reset/forgot", { email });
+      await api.post("/password-reset/forgot", { email });
+      console.log('OTP request sent successfully');
       
       toast({
         title: "OTP Sent",

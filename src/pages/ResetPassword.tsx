@@ -11,15 +11,20 @@ export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Get userId from state passed during navigation
-    if (location.state?.userId) {
-      setUserId(location.state.userId);
+    // Get verification token and email from state passed during navigation
+    if (location.state?.verificationToken) {
+      setVerificationToken(location.state.verificationToken);
+    }
+    
+    if (location.state?.email) {
+      setEmail(location.state.email);
     } else {
       // If no userId is provided, redirect back to forgot password
       toast({
@@ -62,9 +67,10 @@ export default function ResetPassword() {
 
     setIsLoading(true);
     try {
-      await api.post("/api/password-reset/reset", { 
-        userId, 
-        password: newPassword 
+      await api.post("/password-reset/reset", { 
+        email,
+        password: newPassword,
+        verificationToken 
       });
       
       toast({

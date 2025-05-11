@@ -43,17 +43,17 @@ export default function OTPVerification() {
 
     setIsLoading(true);
     try {
-      const response = await api.post("/api/password-reset/verify-otp", { email, otp });
+      const response = await api.post("/password-reset/verify", { email, otp });
       
       toast({
         title: "OTP Verified",
         description: "OTP verified successfully. Please set your new password",
       });
       
-      // Navigate to reset password page with userId
+      // Navigate to reset password page with verification token
       navigate("/reset-password", { 
         state: { 
-          userId: response.data.userId,
+          verificationToken: response.data.verificationToken,
           email: email
         } 
       });
@@ -81,7 +81,7 @@ export default function OTPVerification() {
 
     setIsLoading(true);
     try {
-      await api.post("/api/password-reset/forgot", { email });
+      await api.post("/password-reset/forgot", { email });
       
       toast({
         title: "OTP Resent",
