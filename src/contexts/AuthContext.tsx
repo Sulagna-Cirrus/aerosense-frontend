@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get<AuthResponse>('/auth/profile');
+      const response = await api.get<AuthResponse>('/api/auth/profile');
       setUser(response.data.user);
       setUserProfile(response.data.user);
     } catch (error: any) {
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Attempting login for:', email);
       
-      const response = await api.post<AuthResponse>('/auth/login', {
+      const response = await api.post<AuthResponse>('/api/auth/login', {
         email,
         password,
       });
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (fullName: string, email: string, password: string) => {
     try {
       // Check if the entered email already exists before trying to register
-      const response = await api.post('/auth/signup', {
+      const response = await api.post('/api/auth/signup', {
         fullName,
         email,
         password,

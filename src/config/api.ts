@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Using a relative URL works with both development (through proxy) and production (same-origin)
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Using a relative URL allows the proxy in vite.config.ts to handle routing
+const API_URL = '';
 
 // Create axios instance with default config
 const api = axios.create({
