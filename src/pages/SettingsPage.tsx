@@ -36,6 +36,14 @@ export default function SettingsPage() {
     role: user?.profile?.role || "",
   });
   
+  // Password settings state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = useState({
     emailAlerts: true,
@@ -129,7 +137,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     try {
       // Save profile information
-      await api.put('/api/profiles/update', {
+      await api.put('/api/profiles', {
         fullName: profileForm.name,
         phone: profileForm.phone,
         organization: profileForm.organization,
@@ -174,6 +182,81 @@ export default function SettingsPage() {
       title: "System settings updated",
       description: "Your system preferences have been saved.",
     });
+  };
+  
+  const handleUpdatePassword = async () => {
+    // Validate passwords
+    if (!passwordForm.currentPassword) {
+      toast({
+        title: "Error",
+        description: "Please enter your current password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!passwordForm.newPassword) {
+      toast({
+        title: "Error",
+        description: "Please enter a new password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      toast({
+        title: "Error",
+        description: "New password must be at least 8 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      // Call API to update password
+      await api.put('/api/auth/update-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      
+      toast({
+        title: "Success",
+        description: "Your password has been updated successfully",
+      });
+      
+      // Clear password form
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      
+      // Log the user out after password change
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }, 1500);
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
   
   return (
@@ -311,15 +394,33 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="current-password">Current Password</Label>
-                  <Input id="current-password" type="password" />
+                  <Input 
+                    id="current-password" 
+                    type="password" 
+                    value={passwordForm.currentPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New Password</Label>
-                  <Input id="new-password" type="password" />
+                  <Input 
+                    id="new-password" 
+                    type="password" 
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input id="confirm-password" type="password" />
+                  <Input 
+                    id="confirm-password" 
+                    type="password" 
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                    required
+                  />
                 </div>
               </div>
               
@@ -339,9 +440,14 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2" 
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword}
+              >
                 <Save className="h-4 w-4" />
-                Update Password
+                {isUpdatingPassword ? "Updating..." : "Update Password"}
               </Button>
             </CardFooter>
           </Card>

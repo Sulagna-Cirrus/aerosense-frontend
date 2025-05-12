@@ -19,6 +19,7 @@ import AboutPage from "@/pages/AboutPage";
 import ForgotPassword from "@/pages/ForgotPassword";
 import OTPVerification from "@/pages/OTPVerification";
 import ResetPassword from "@/pages/ResetPassword";
+import AccountPage from "@/pages/AccountPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/crops" element={<CropsPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/historical" element={<HistoricalPage />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
             

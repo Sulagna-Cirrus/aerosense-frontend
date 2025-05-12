@@ -9,7 +9,8 @@ import {
   ChartLine, 
   Settings,
   Menu,
-  X
+  X,
+  User
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,11 @@ export function DashboardSidebar() {
       href: "/historical",
       label: "Historical Data",
       icon: ChartLine,
+    },
+    {
+      href: "/account",
+      label: "Account",
+      icon: User,
     },
     {
       href: "/settings",
